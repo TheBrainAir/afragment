@@ -1,0 +1,63 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "afragment"
+version = "0.1.0"
+description = "Async Python library for Fragment.com API - Purchase Telegram Stars, Premium, and TON topups"
+readme = "README.md"
+license = {file = "LICENSE"}
+requires-python = ">=3.8"
+authors = [
+    { name = "TheBrainAir"}
+]
+keywords = [
+    "telegram",
+    "fragment",
+    "stars",
+    "premium",
+    "ton",
+    "async",
+    "api",
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: AsyncIO",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+dependencies = [
+    "aiohttp>=3.8.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/TheBrainAir/afragment"
+Documentation = "https://github.com/TheBrainAir/afragment#readme"
+Issues = "https://github.com/TheBrainAir/afragment/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["afragment*"]
+
+[tool.setuptools.package-data]
+afragment = ["py.typed"]
+
+
+
