@@ -3,7 +3,6 @@
 [![PyPI version](https://img.shields.io/pypi/v/afragment.svg)](https://pypi.org/project/afragment/)
 [![Python](https://img.shields.io/pypi/pyversions/afragment.svg)](https://pypi.org/project/afragment/)
 [![License](https://img.shields.io/github/license/TheBrainAir/afragment.svg)](https://github.com/TheBrainAir/afragment/blob/main/LICENSE)
-[![Downloads](https://img.shields.io/pypi/dm/afragment.svg)](https://pypi.org/project/afragment/)
 
 Async Python library for the Fragment.com API. Purchase Telegram Stars, Premium subscriptions, and TON balance topups programmatically.
 
