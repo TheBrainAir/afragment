@@ -402,5 +402,180 @@ class AsyncFragmentClient:
             "show_sender": "1" if show_sender else "0",
         })
 
+    # ==================== High-Level Convenience Methods ====================
+
+    async def buy_stars(
+        self,
+        username: str,
+        quantity: int,
+        wallet_address: str,
+        show_sender: bool = False,
+    ) -> dict:
+        """
+        Purchase Telegram Stars in one call.
+
+        Combines search_stars_recipient, init_buy_stars_request, and 
+        get_buy_stars_link into a single convenient method.
+
+        Args:
+            username: Telegram username (without @).
+            quantity: Number of Stars to purchase (minimum 50).
+            wallet_address: Your TON wallet address for payment.
+            show_sender: Whether to show sender in transaction.
+
+        Returns:
+            Dictionary containing:
+                - recipient: Recipient information (name, photo)
+                - amount: Price in TON (nanotons)
+                - transaction: Transaction details with messages:
+                    - address: Where to send TON
+                    - amount: How much to send (nanotons)
+                    - payload: Transaction payload
+
+        Example:
+            result = await client.buy_stars("durov", 100, "UQ...")
+            address = result["transaction"]["messages"][0]["address"]
+            amount = result["transaction"]["messages"][0]["amount"]
+        """
+        # Step 1: Search for recipient
+        search_result = await self.search_stars_recipient(username, quantity)
+        recipient_id = search_result["found"]["recipient"]
+        recipient_info = {
+            "name": search_result["found"].get("name"),
+            "photo": search_result["found"].get("photo"),
+        }
+
+        # Step 2: Initialize purchase request
+        init_result = await self.init_buy_stars_request(recipient_id, quantity)
+        req_id = init_result["req_id"]
+        amount = init_result.get("amount")
+
+        # Step 3: Get transaction details
+        account = {"address": wallet_address}
+        link_result = await self.get_buy_stars_link(
+            req_id, account, show_sender=show_sender
+        )
+
+        return {
+            "recipient": recipient_info,
+            "amount": amount,
+            "transaction": link_result.get("transaction"),
+        }
+
+    async def buy_premium(
+        self,
+        username: str,
+        months: int,
+        wallet_address: str,
+        show_sender: bool = False,
+    ) -> dict:
+        """
+        Gift Telegram Premium in one call.
+
+        Combines search_premium_gift_recipient, init_gift_premium_request, 
+        and get_gift_premium_link into a single convenient method.
+
+        Args:
+            username: Telegram username (without @).
+            months: Duration - 3, 6, or 12 months.
+            wallet_address: Your TON wallet address for payment.
+            show_sender: Whether to show sender in transaction.
+
+        Returns:
+            Dictionary containing:
+                - recipient: Recipient information (name, photo)
+                - amount: Price in TON (nanotons)
+                - transaction: Transaction details with messages:
+                    - address: Where to send TON
+                    - amount: How much to send (nanotons)
+                    - payload: Transaction payload
+
+        Example:
+            result = await client.buy_premium("durov", 12, "UQ...")
+            address = result["transaction"]["messages"][0]["address"]
+            amount = result["transaction"]["messages"][0]["amount"]
+        """
+        # Step 1: Search for recipient
+        search_result = await self.search_premium_gift_recipient(username)
+        recipient_id = search_result["found"]["recipient"]
+        recipient_info = {
+            "name": search_result["found"].get("name"),
+            "photo": search_result["found"].get("photo"),
+        }
+
+        # Step 2: Initialize purchase request
+        init_result = await self.init_gift_premium_request(recipient_id, months)
+        req_id = init_result["req_id"]
+        amount = init_result.get("amount")
+
+        # Step 3: Get transaction details
+        account = {"address": wallet_address}
+        link_result = await self.get_gift_premium_link(
+            req_id, account, show_sender=show_sender
+        )
+
+        return {
+            "recipient": recipient_info,
+            "amount": amount,
+            "transaction": link_result.get("transaction"),
+        }
+
+    async def buy_ton_topup(
+        self,
+        username: str,
+        amount: int,
+        wallet_address: str,
+        show_sender: bool = False,
+    ) -> dict:
+        """
+        TON balance topup in one call.
+
+        Combines search_ads_topup_recipient, init_ads_topup_request, 
+        and get_ads_topup_link into a single convenient method.
+
+        Args:
+            username: Telegram username (without @).
+            amount: Amount in TON (whole number, minimum 1).
+            wallet_address: Your TON wallet address for payment.
+            show_sender: Whether to show sender in transaction.
+
+        Returns:
+            Dictionary containing:
+                - recipient: Recipient information (name, photo)
+                - amount: Requested topup amount in TON
+                - transaction: Transaction details with messages:
+                    - address: Where to send TON
+                    - amount: How much to send (nanotons)
+                    - payload: Transaction payload
+
+        Example:
+            result = await client.buy_ton_topup("durov", 10, "UQ...")
+            address = result["transaction"]["messages"][0]["address"]
+            tx_amount = result["transaction"]["messages"][0]["amount"]
+        """
+        # Step 1: Search for recipient
+        search_result = await self.search_ads_topup_recipient(username)
+        recipient_id = search_result["found"]["recipient"]
+        recipient_info = {
+            "name": search_result["found"].get("name"),
+            "photo": search_result["found"].get("photo"),
+        }
+
+        # Step 2: Initialize topup request
+        init_result = await self.init_ads_topup_request(recipient_id, amount)
+        req_id = init_result["req_id"]
+
+        # Step 3: Get transaction details
+        account = {"address": wallet_address}
+        link_result = await self.get_ads_topup_link(
+            req_id, account, show_sender=show_sender
+        )
+
+        return {
+            "recipient": recipient_info,
+            "amount": amount,
+            "transaction": link_result.get("transaction"),
+        }
+
 
 

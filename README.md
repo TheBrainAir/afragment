@@ -3,6 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/afragment.svg)](https://pypi.org/project/afragment/)
 [![Python](https://img.shields.io/pypi/pyversions/afragment.svg)](https://pypi.org/project/afragment/)
 [![License](https://img.shields.io/github/license/TheBrainAir/afragment.svg)](https://github.com/TheBrainAir/afragment/blob/main/LICENSE)
+[![Downloads](https://img.shields.io/pypi/dm/afragment.svg)](https://pypi.org/project/afragment/)
 
 Async Python library for the Fragment.com API. Purchase Telegram Stars, Premium subscriptions, and TON balance topups programmatically.
 
@@ -11,7 +12,6 @@ Async Python library for the Fragment.com API. Purchase Telegram Stars, Premium 
 ```bash
 pip install afragment
 ```
-
 
 ## Authentication
 
@@ -36,41 +36,32 @@ You need two credentials from Fragment.com:
 
 ## Quick Start
 
-### Purchasing Telegram Stars
+**One call = ready transaction!** Just pass username, value, and wallet address.
+
+### 🌟 Buy Telegram Stars
 
 ```python
 import asyncio
-from afragment import AsyncFragmentClient
+from afragment import AsyncFragmentClient, nano_to_ton
 
-# Wallet configuration (only address required, chain defaults to "-239")
-WALLET_ACCOUNT = {
-    "address": "your_wallet_address",
-}
-
-async def buy_stars():
+async def main():
     async with AsyncFragmentClient(
         fragment_hash="your_hash",
         fragment_cookie="your_cookie"
     ) as client:
-        # Step 1: Search for recipient
-        search = await client.search_stars_recipient("username", quantity=100)
-        recipient = search["found"]["recipient"]
-        print(f"Found: {search['found']['name']}")
+        result = await client.buy_stars("username", 100, "your_wallet_address")
+        
+        # Get transaction details
+        tx = result["transaction"]["messages"][0]
+        print(f"Recipient: {result['recipient']['name']}")
+        print(f"Price: {result['amount']} TON")
+        print(f"Send to: {tx['address']}")
+        print(f"Amount: {nano_to_ton(int(tx['amount']))} TON")
 
-        # Step 2: Initialize purchase (minimum 50 stars)
-        init = await client.init_buy_stars_request(recipient, quantity=100)
-        req_id = init["req_id"]
-        print(f"Price: {init['amount']} TON")
-
-        # Step 3: Get transaction details (device info is optional)
-        tx = await client.get_buy_stars_link(req_id, WALLET_ACCOUNT)
-        print(f"Send to: {tx['transaction']['messages'][0]['address']}")
-        print(f"Amount: {tx['transaction']['messages'][0]['amount']} nanoTON")
-
-asyncio.run(buy_stars())
+asyncio.run(main())
 ```
 
-### Gifting Telegram Premium
+### ⭐ Gift Telegram Premium
 
 ```python
 async def gift_premium():
@@ -78,19 +69,15 @@ async def gift_premium():
         fragment_hash="your_hash",
         fragment_cookie="your_cookie"
     ) as client:
-        # Step 1: Search for recipient
-        search = await client.search_premium_gift_recipient("username")
-        recipient = search["found"]["recipient"]
-
-        # Step 2: Initialize purchase (3, 6, or 12 months)
-        init = await client.init_gift_premium_request(recipient, months=3)
-        req_id = init["req_id"]
-
-        # Step 3: Get transaction details
-        tx = await client.get_gift_premium_link(req_id, WALLET_ACCOUNT)
+        # Gift 12 months of Premium
+        result = await client.buy_premium("username", 12, "your_wallet_address")
+        
+        tx = result["transaction"]["messages"][0]
+        print(f"Send to: {tx['address']}")
+        print(f"Amount: {tx['amount']} nanoTON")
 ```
 
-### TON Balance Topup
+### 💎 TON Balance Topup
 
 ```python
 async def topup_ton():
@@ -98,53 +85,60 @@ async def topup_ton():
         fragment_hash="your_hash",
         fragment_cookie="your_cookie"
     ) as client:
-        # Step 1: Search for recipient
-        search = await client.search_ads_topup_recipient("username")
-        recipient = search["found"]["recipient"]
-
-        # Step 2: Initialize topup (minimum 1 TON, whole numbers only)
-        init = await client.init_ads_topup_request(recipient, amount=100)
-        req_id = init["req_id"]
-
-        # Step 3: Get transaction details
-        tx = await client.get_ads_topup_link(req_id, WALLET_ACCOUNT)
+        # Topup 10 TON
+        result = await client.buy_ton_topup("username", 10, "your_wallet_address")
+        
+        tx = result["transaction"]["messages"][0]
+        print(f"Send to: {tx['address']}")
+        print(f"Amount: {tx['amount']} nanoTON")
 ```
 
-## Validation Rules
+## API Reference
 
-The library validates input before making API requests:
+### Main Methods
 
-| Method | Parameter | Validation |
-|--------|-----------|------------|
-| `search_stars_recipient` | `quantity` | Minimum 50 |
-| `init_buy_stars_request` | `quantity` | Minimum 50 |
-| `init_gift_premium_request` | `months` | Must be 3, 6, or 12 |
-| `init_ads_topup_request` | `amount` | Minimum 1, whole numbers only |
+| Method | Parameters | Description |
+|--------|------------|-------------|
+| `buy_stars(username, quantity, wallet_address)` | quantity >= 50 | Purchase Telegram Stars |
+| `buy_premium(username, months, wallet_address)` | months: 3, 6, or 12 | Gift Telegram Premium |
+| `buy_ton_topup(username, amount, wallet_address)` | amount >= 1 (whole number) | TON balance topup |
+
+### Return Value
+
+All methods return a dictionary:
+
+```python
+{
+    "recipient": {
+        "name": "User Name",
+        "photo": "photo_url"
+    },
+    "amount": "2.5",  # Price in TON
+    "transaction": {
+        "messages": [{
+            "address": "EQ...",      # Where to send TON
+            "amount": "2500000000",  # Amount in nanoTON
+            "payload": "base64..."   # Transaction payload
+        }]
+    }
+}
+```
 
 ## Utility Functions
 
 ### Payload Decoding
 
 ```python
-from afragment import decode_payload, extract_ref_id, format_transaction_comment
+from afragment import decode_payload, extract_ref_id, extract_transaction_text
 
-# Decode base64 payload from transaction
-payload = tx["transaction"]["messages"][0]["payload"]
-decoded = decode_payload(payload)
+payload = result["transaction"]["messages"][0]["payload"]
 
 # Extract reference ID
 ref_id = extract_ref_id(payload)
-print(f"Reference: {ref_id}")
 
-# Format transaction comments
-comment = format_transaction_comment("stars", quantity=100, ref_id=ref_id)
+# Extract human-readable comment
+comment = extract_transaction_text(payload, "stars", quantity=100)
 # Output: "100 Telegram Stars\n\nRef#abc123"
-
-comment = format_transaction_comment("premium", months=3, ref_id=ref_id)
-# Output: "Telegram Premium for 3 months\n\nRef#abc123"
-
-comment = format_transaction_comment("topup", ref_id=ref_id)
-# Output: "Telegram account top up\n\nRef#abc123"
 ```
 
 ### Amount Conversion
@@ -152,7 +146,6 @@ comment = format_transaction_comment("topup", ref_id=ref_id)
 ```python
 from afragment import nano_to_ton, ton_to_nano
 
-# Convert between TON and nanoTON
 ton = nano_to_ton(1500000000)  # 1.5 TON
 nano = ton_to_nano(1.5)        # 1500000000 nanoTON
 ```
@@ -174,51 +167,16 @@ async def safe_purchase():
         fragment_cookie="your_cookie"
     ) as client:
         try:
-            # Validation error if quantity < 50
-            search = await client.search_stars_recipient("username", 100)
-        except ValueError as e:
-            print(f"Validation error: {e}")
-            return
+            result = await client.buy_stars("username", 100, "wallet_address")
         except InvalidRecipientError:
             print("User not found!")
-            return
-
-        # Retry on price change
-        for attempt in range(3):
-            try:
-                init = await client.init_buy_stars_request(
-                    search["found"]["recipient"], 100
-                )
-                break
-            except PriceChangedError:
-                print(f"Price changed, retrying... ({attempt + 1}/3)")
-                await asyncio.sleep(1)
-        else:
-            print("Failed after 3 attempts")
-            return
-
-        try:
-            tx = await client.get_buy_stars_link(init["req_id"], WALLET_ACCOUNT)
+        except PriceChangedError:
+            print("Price changed, try again")
         except AuthenticationError:
-            print("Session expired, please refresh credentials")
-            return
+            print("Session expired, refresh credentials")
+        except ValueError as e:
+            print(f"Validation error: {e}")
 ```
-
-## API Reference
-
-### Client Methods
-
-| Method | Description | Validation |
-|--------|-------------|------------|
-| `search_stars_recipient(query, quantity)` | Find user for Stars purchase | quantity >= 50 |
-| `init_buy_stars_request(recipient, quantity)` | Initialize Stars purchase | quantity >= 50 |
-| `get_buy_stars_link(id, account, [device])` | Get Stars transaction details | account required, device optional |
-| `search_premium_gift_recipient(query)` | Find user for Premium gift | - |
-| `init_gift_premium_request(recipient, months)` | Initialize Premium purchase | months in (3, 6, 12) |
-| `get_gift_premium_link(id, account, [device])` | Get Premium transaction details | account required, device optional |
-| `search_ads_topup_recipient(query)` | Find user for TON topup | - |
-| `init_ads_topup_request(recipient, amount)` | Initialize TON topup | amount >= 1, int only |
-| `get_ads_topup_link(id, account, [device])` | Get TON topup transaction details | account required, device optional |
 
 ### Exceptions
 
@@ -230,35 +188,13 @@ async def safe_purchase():
 | `InvalidRecipientError` | User not found or not eligible |
 | `ValueError` | Invalid input (validation failed) |
 
-### Wallet Account Format
+## Validation Rules
 
-```python
-{
-    "address": "UQ...",  # Your TON wallet address (required)
-    # "chain": "-239",   # Optional, defaults to "-239" (TON mainnet)
-}
-```
-
-### Device Info Format (Optional)
-
-Device info is optional. The library uses Tonkeeper defaults:
-
-```python
-{
-    "platform": "android",
-    "appName": "Tonkeeper",
-    "appVersion": "5.0.18",
-    "maxProtocolVersion": 2,
-    "features": ["SendTransaction", {"name": "SendTransaction", "maxMessages": 4}]
-}
-```
-
-You can pass custom device info if needed:
-
-```python
-tx = await client.get_buy_stars_link(req_id, WALLET_ACCOUNT, custom_device_info)
-```
-
+| Method | Parameter | Validation |
+|--------|-----------|------------|
+| `buy_stars` | `quantity` | Minimum 50 |
+| `buy_premium` | `months` | Must be 3, 6, or 12 |
+| `buy_ton_topup` | `amount` | Minimum 1, whole numbers only |
 
 ## Contact
 
