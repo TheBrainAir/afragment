@@ -198,7 +198,8 @@ async def safe_purchase():
 
 ## Contact
 
-- Telegram: [@thebraina1r](https://t.me/thebraina1r)
+- Dev: [@thebraina1r](https://t.me/thebraina1r)
+- Community: [@afragment_lib](https://t.me/afragment_lib)
 
 ## Donate
 
