@@ -3,7 +3,6 @@
 [![PyPI version](https://img.shields.io/pypi/v/afragment.svg)](https://pypi.org/project/afragment/)
 [![Python](https://img.shields.io/pypi/pyversions/afragment.svg)](https://pypi.org/project/afragment/)
 [![License](https://img.shields.io/github/license/TheBrainAir/afragment.svg)](https://github.com/TheBrainAir/afragment/blob/main/LICENSE)
-[![Downloads](https://img.shields.io/pypi/dm/afragment.svg)](https://pypi.org/project/afragment/)
 
 Async Python library for the Fragment.com API. Purchase Telegram Stars, Premium subscriptions, and TON balance topups programmatically.
 
@@ -49,7 +48,11 @@ async def main():
         fragment_hash="your_hash",
         fragment_cookie="your_cookie"
     ) as client:
+        # Pay with TON (default)
         result = await client.buy_stars("username", 100, "your_wallet_address")
+        
+        # Or pay with USDT
+        result = await client.buy_stars("username", 100, "your_wallet_address", payment_method="usdt")
         
         # Get transaction details
         tx = result["transaction"]["messages"][0]
@@ -99,9 +102,15 @@ async def topup_ton():
 
 | Method | Parameters | Description |
 |--------|------------|-------------|
-| `buy_stars(username, quantity, wallet_address)` | quantity >= 50 | Purchase Telegram Stars |
-| `buy_premium(username, months, wallet_address)` | months: 3, 6, or 12 | Gift Telegram Premium |
-| `buy_ton_topup(username, amount, wallet_address)` | amount >= 1 (whole number) | TON balance topup |
+| `buy_stars(username, quantity, wallet_address, payment_method="ton")` | quantity >= 50 | Purchase Telegram Stars |
+| `buy_premium(username, months, wallet_address, payment_method="ton")` | months: 3, 6, or 12 | Gift Telegram Premium |
+| `buy_ton_topup(username, amount, wallet_address, payment_method="ton")` | amount >= 1 (whole number) | TON balance topup |
+
+### Payment Methods
+
+All purchase methods accept `payment_method` parameter:
+- `"ton"` — pay with TON (default)
+- `"usdt"` — pay with USDT
 
 ### Return Value
 
@@ -198,8 +207,7 @@ async def safe_purchase():
 
 ## Contact
 
-- Dev: [@thebraina1r](https://t.me/thebraina1r)
-- Community: [@afragment_lib](https://t.me/afragment_lib)
+- Telegram: [@thebraina1r](https://t.me/thebraina1r)
 
 ## Donate
 
