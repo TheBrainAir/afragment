@@ -170,13 +170,14 @@ class AsyncFragmentClient:
             "quantity": quantity,
         })
 
-    async def init_buy_stars_request(self, recipient: str, quantity: int) -> dict:
+    async def init_buy_stars_request(self, recipient: str, quantity: int, payment_method: str = "ton") -> dict:
         """
         Initialize a Stars purchase request.
 
         Args:
             recipient: Recipient ID from search_stars_recipient().
             quantity: Number of Stars to purchase (minimum 50).
+            payment_method: Payment method - "ton" or "usdt" (default: "ton").
 
         Returns:
             Dictionary containing:
@@ -194,6 +195,7 @@ class AsyncFragmentClient:
             "method": "initBuyStarsRequest",
             "recipient": recipient,
             "quantity": quantity,
+            "payment_method": payment_method,
         })
 
     async def get_buy_stars_link(
@@ -254,13 +256,14 @@ class AsyncFragmentClient:
             "query": query,
         })
 
-    async def init_gift_premium_request(self, recipient: str, months: int) -> dict:
+    async def init_gift_premium_request(self, recipient: str, months: int, payment_method: str = "ton") -> dict:
         """
         Initialize a Premium gift purchase request.
 
         Args:
             recipient: Recipient ID from search_premium_gift_recipient().
             months: Duration - 3, 6, or 12 months.
+            payment_method: Payment method - "ton" or "usdt" (default: "ton").
 
         Returns:
             Dictionary containing:
@@ -278,6 +281,7 @@ class AsyncFragmentClient:
             "method": "initGiftPremiumRequest",
             "recipient": recipient,
             "months": months,
+            "payment_method": payment_method,
         })
 
     async def get_gift_premium_link(
@@ -336,13 +340,14 @@ class AsyncFragmentClient:
             "query": query,
         })
 
-    async def init_ads_topup_request(self, recipient: str, amount: int) -> dict:
+    async def init_ads_topup_request(self, recipient: str, amount: int, payment_method: str = "ton") -> dict:
         """
         Initialize a TON topup request.
 
         Args:
             recipient: Recipient ID from search_ads_topup_recipient().
             amount: Amount in TON (whole number, minimum 1).
+            payment_method: Payment method - "ton" or "usdt" (default: "ton").
 
         Returns:
             Dictionary containing:
@@ -366,6 +371,7 @@ class AsyncFragmentClient:
             "hash": self.fragment_hash,
             "recipient": recipient,
             "amount": str(amount),
+            "payment_method": payment_method,
         })
 
     async def get_ads_topup_link(
@@ -409,6 +415,7 @@ class AsyncFragmentClient:
         username: str,
         quantity: int,
         wallet_address: str,
+        payment_method: str = "ton",
         show_sender: bool = False,
     ) -> dict:
         """
@@ -421,6 +428,7 @@ class AsyncFragmentClient:
             username: Telegram username (without @).
             quantity: Number of Stars to purchase (minimum 50).
             wallet_address: Your TON wallet address for payment.
+            payment_method: Payment method - "ton" or "usdt" (default: "ton").
             show_sender: Whether to show sender in transaction.
 
         Returns:
@@ -446,7 +454,7 @@ class AsyncFragmentClient:
         }
 
         # Step 2: Initialize purchase request
-        init_result = await self.init_buy_stars_request(recipient_id, quantity)
+        init_result = await self.init_buy_stars_request(recipient_id, quantity, payment_method)
         req_id = init_result["req_id"]
         amount = init_result.get("amount")
 
@@ -467,6 +475,7 @@ class AsyncFragmentClient:
         username: str,
         months: int,
         wallet_address: str,
+        payment_method: str = "ton",
         show_sender: bool = False,
     ) -> dict:
         """
@@ -479,6 +488,7 @@ class AsyncFragmentClient:
             username: Telegram username (without @).
             months: Duration - 3, 6, or 12 months.
             wallet_address: Your TON wallet address for payment.
+            payment_method: Payment method - "ton" or "usdt" (default: "ton").
             show_sender: Whether to show sender in transaction.
 
         Returns:
@@ -504,7 +514,7 @@ class AsyncFragmentClient:
         }
 
         # Step 2: Initialize purchase request
-        init_result = await self.init_gift_premium_request(recipient_id, months)
+        init_result = await self.init_gift_premium_request(recipient_id, months, payment_method)
         req_id = init_result["req_id"]
         amount = init_result.get("amount")
 
@@ -525,6 +535,7 @@ class AsyncFragmentClient:
         username: str,
         amount: int,
         wallet_address: str,
+        payment_method: str = "ton",
         show_sender: bool = False,
     ) -> dict:
         """
@@ -537,6 +548,7 @@ class AsyncFragmentClient:
             username: Telegram username (without @).
             amount: Amount in TON (whole number, minimum 1).
             wallet_address: Your TON wallet address for payment.
+            payment_method: Payment method - "ton" or "usdt" (default: "ton").
             show_sender: Whether to show sender in transaction.
 
         Returns:
@@ -562,7 +574,7 @@ class AsyncFragmentClient:
         }
 
         # Step 2: Initialize topup request
-        init_result = await self.init_ads_topup_request(recipient_id, amount)
+        init_result = await self.init_ads_topup_request(recipient_id, amount, payment_method)
         req_id = init_result["req_id"]
 
         # Step 3: Get transaction details

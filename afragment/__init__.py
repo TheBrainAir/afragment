@@ -38,7 +38,7 @@ from .utils import (
     ton_to_nano,
 )
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __all__ = [
     "AsyncFragmentClient",
     "FragmentAPIError",
